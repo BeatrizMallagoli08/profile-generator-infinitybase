@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Fotos de Perfil da Marca</title>
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #CCCCC4;
+            color: #1F1F1F;
+        }
+        
+        .sharp-panel {
+            border-radius: 0 !important;
+            border: 2px solid #1F1F1F;
+            background-color: #f9fafb;
+        }
+
+        .sharp-button {
+            border-radius: 0 !important;
+            border: 2px solid #1F1F1F !important;
+            box-shadow: 2px 2px 0px 0px rgba(31, 31, 31, 0.9);
+            transition: all 0.1s ease-in-out;
+        }
+        .sharp-button:hover:not(:disabled) {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px 0px rgba(31, 31, 31, 0.9);
+        }
+        .sharp-button:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px rgba(31, 31, 31, 0.9);
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+        
+        #image-container {
+            width: 100%;
+            padding-top: 100%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0;
+            border: 4px solid #1F1F1F;
+            box-shadow: 6px 6px 0px 0px rgba(31, 31, 31, 0.9);
+        }
+        #image-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="min-h-screen flex flex-col items-center p-4" style="background-color: #CCCCC4;">
+        <header class="w-full max-w-4xl text-center py-6">
+            <h1 class="text-3xl font-bold" style="color: #1F1F1F;">Gerador de Fotos de Perfil</h1>
+            <p class="mt-2" style="color: #1F1F1F;">Personalize sua foto com o fundo padrão da empresa. Remoção de fundo por IA.</p>
+        </header>
+
+        <main class="w-full max-w-4xl p-6 md:p-10 grid grid-cols-1 lg:grid-cols-3 gap-8 sharp-panel" style="background-color: #f9fafb;">
+            
+            <!-- Controles -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Upload -->
+                <div class="p-4 sharp-panel">
+                    <label for="image-upload" class="block text-lg font-semibold mb-2" style="color: #1F1F1F;">1. Selecione Sua Foto</label>
+                    <!-- Aceita PNG e JPEG explicitamente -->
+                    <input type="file" id="image-upload" accept="image/png, image/jpeg, image/jpg" class="hidden">
+                    <label for="image-upload" id="upload-label" class="custom-file-upload sharp-button bg-[#E36F52] text-white hover:bg-[#ff8f73]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M5.5 13a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                            <path fill-rule="evenodd" d="M11.5 6.25a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M15.5 13a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" clip-rule="evenodd" />
+                            <path d="M5.5 13a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                            <path d="M15.5 13a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                            <path d="M10 2a2 2 0 00-2 2v.586l.293.293a1 1 0 001.414 0l.293-.293V4a2 2 0 00-2-2zM4 5a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-3.586l.293-.293A1 1 0 0013 4.414V4a2 2 0 00-2-2H9a2 2 0 00-2 2v.414a1 1 0 00.293.707L7.586 5H4zm3 3a1 1 0 100-2 1 1 0 000 2z" />
+                        </svg>
+                        Escolher Imagem
+                    </label>
+                    <p id="file-name" class="text-sm mt-2 italic" style="color: #1F1F1F;">Nenhuma imagem selecionada.</p>
+                </div>
+
+                <!-- Cores -->
+                <div class="p-4 sharp-panel">
+                    <p class="block text-lg font-semibold mb-3" style="color: #1F1F1F;">2. Escolha a Cor de Fundo</p>
+                    <div id="color-selector" class="flex flex-wrap gap-3">
+                        <button data-color="#E36F52" class="w-10 h-10 shadow-md transition-all border-2 border-transparent sharp-color-selector" style="background-color: #E36F52; border-radius: 0;" title="Laranja Principal"></button>
+                        <button data-color="#1F1F1F" class="w-10 h-10 shadow-md transition-all border-2 border-transparent sharp-color-selector" style="background-color: #1F1F1F; border-radius: 0;" title="Preto da Marca"></button>
+                        <button data-color="#CCCCC4" class="w-10 h-10 shadow-md transition-all border-2 border-transparent sharp-color-selector" style="background-color: #CCCCC4; border: 1px solid #1F1F1F; border-radius: 0;" title="Off White"></button>
+                        <button data-color="#74B5F2" class="w-10 h-10 shadow-md transition-all border-2 border-transparent sharp-color-selector" style="background-color: #74B5F2; border-radius: 0;" title="Azul Alternativo"></button>
+                    </div>
+                </div>
+
+                <!-- Download -->
+                <div class="p-4 sharp-panel">
+                    <p class="block text-lg font-semibold mb-2" style="color: #1F1F1F;">3. Baixe o Resultado</p>
+                    <button id="download-btn" class="w-full sharp-button bg-[#E36F52] text-white font-bold py-3 hover:bg-[#ff8f73] transition duration-150 flex items-center justify-center disabled:opacity-50" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Baixar Imagem de Perfil (PNG)
+                    </button>
+                    <p id="download-msg" class="text-sm mt-2 italic hidden" style="color: #1F1F1F;"></p>
+                </div>
+
+                <!-- Loading -->
+                <div id="loading-indicator" class="hidden flex items-center justify-center p-3 border border-yellow-700 sharp-panel bg-yellow-100">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-700 mr-3"></div>
+                    <span class="text-yellow-800 font-medium">Processando remoção de fundo...</span>
+                </div>
+                
+                <!-- Message Box -->
+                <div id="error-box" class="hidden p-4 border border-red-700 sharp-panel bg-red-100 text-red-800 font-medium">
+                    <span id="error-message"></span>
+                </div>
+
+            </div>
+
+            <!-- Preview -->
+            <div class="lg:col-span-2">
+                <p class="text-lg font-semibold mb-3 text-center" style="color: #1F1F1F;">Pré-visualização (1024x1024)</p>
+                <div id="image-container">
+                    <canvas id="image-canvas" width="1024" height="1024" class="rounded-none"></canvas>
+                    <div id="placeholder" class="absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-600 text-center p-4">
+                        <span class="text-xl">Carregue uma imagem para começar.</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+        
+        <footer class="text-center text-sm text-gray-500 mt-6 pb-4 max-w-4xl w-full">
+            <p>Remoção de fundo feita com a API do remove.bg. Use imagens em PNG ou JPEG.</p>
+        </footer>
+
+    </div>
+    
+<script>
+// ******** CONFIGURAÇÃO DA API REMOVE.BG ********
+// ⚠️ Se publicar este arquivo, o ideal é esconder a chave em um backend.
+const REMOVE_BG_API_KEY = "GEeUCMC66zeeyppRMBVnVt28";
+const API_URL = "https://api.remove.bg/v1.0/removebg";
+
+const canvas = document.getElementById('image-canvas');
+const ctx = canvas.getContext('2d');
+const imageUpload = document.getElementById('image-upload');
+const fileNameDisplay = document.getElementById('file-name');
+const colorSelector = document.getElementById('color-selector');
+const downloadBtn = document.getElementById('download-btn');
+const loadingIndicator = document.getElementById('loading-indicator');
+const placeholder = document.getElementById('placeholder');
+const errorBox = document.getElementById('error-box');
+const errorMessage = document.getElementById('error-message');
+
+const OUTPUT_SIZE = 1024;
+let selectedColor = '#E36F52';
+let cutoutImage = null;
+
+// --------- Helpers de UI ---------
+function showError(msg) {
+    errorBox.classList.remove('hidden');
+    errorMessage.textContent = msg;
+}
+function hideError() {
+    errorBox.classList.add('hidden');
+}
+
+// --------- Utilitário de contraste ---------
+function getContrastColor(hexColor) {
+    const color = hexColor.substring(1);
+    const r = parseInt(color.substring(0, 2), 16);
+    const g = parseInt(color.substring(2, 4), 16);
+    const b = parseInt(color.substring(4, 6), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? '#1F1F1F' : '#F9FAFB';
+}
+
+// --------- Bitmap + aura seguindo o recorte ---------
+function createAuraBackground(bgColor, cutoutImage) {
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    const SIZE = OUTPUT_SIZE;
+    tempCanvas.width = SIZE;
+    tempCanvas.height = SIZE;
+
+    // fundo sólido
+    tempCtx.fillStyle = bgColor;
+    tempCtx.fillRect(0, 0, SIZE, SIZE);
+
+    if (!cutoutImage) return tempCanvas;
+
+    // aplica o MESMO cover usado no renderCanvas,
+    // para o bitmap seguir exatamente a posição da pessoa
+    const imgW = cutoutImage.width;
+    const imgH = cutoutImage.height;
+    const ratio = Math.max(SIZE / imgW, SIZE / imgH);
+    const drawW = imgW * ratio;
+    const drawH = imgH * ratio;
+    const offsetX = (SIZE - drawW) / 2;
+    const offsetY = (SIZE - drawH) / 2;
+
+    const readCanvas = document.createElement('canvas');
+    readCanvas.width = SIZE;
+    readCanvas.height = SIZE;
+    const readCtx = readCanvas.getContext('2d');
+    readCtx.clearRect(0, 0, SIZE, SIZE);
+    readCtx.drawImage(cutoutImage, offsetX, offsetY, drawW, drawH);
+
+    const imageData = readCtx.getImageData(0, 0, SIZE, SIZE);
+    const data = imageData.data;
+
+    const DOT_COLOR = getContrastColor(bgColor);
+    tempCtx.fillStyle = DOT_COLOR;
+    const DOT_SIZE = 3;
+    const SPACING = 10;
+    const MAX_RADIUS = 220;
+    const NEIGHBOR_STEP = 6;
+
+    function getAlphaAt(x, y) {
+        const idx = (y * SIZE + x) * 4;
+        return idx < data.length ? data[idx + 3] : 0;
+    }
+
+    for (let y = 0; y < SIZE; y += SPACING) {
+        for (let x = 0; x < SIZE; x += SPACING) {
+            if (getAlphaAt(x, y) > 50) continue;
+
+            let minDist = MAX_RADIUS + 1;
+
+            for (let ry = -MAX_RADIUS; ry <= MAX_RADIUS; ry += NEIGHBOR_STEP) {
+                const sy = y + ry;
+                if (sy < 0 || sy >= SIZE) continue;
+
+                for (let rx = -MAX_RADIUS; rx <= MAX_RADIUS; rx += NEIGHBOR_STEP) {
+                    const sx = x + rx;
+                    if (sx < 0 || sx >= SIZE) continue;
+
+                    if (getAlphaAt(sx, sy) > 50) {
+                        const dist = Math.sqrt(rx * rx + ry * ry);
+                        if (dist < minDist) {
+                            minDist = dist;
+                        }
+                    }
+                }
+            }
+
+            if (minDist <= MAX_RADIUS) {
+                const intensity = 1 - (minDist / MAX_RADIUS);
+                if (intensity > 0.05) {
+                    const sizeScale = 0.75 + intensity * 0.5;
+                    const dotSize = DOT_SIZE * sizeScale;
+                    const offset = (SPACING - dotSize) / 2;
+                    tempCtx.globalAlpha = 0.3 + 0.7 * intensity;
+                    tempCtx.fillRect(x + offset, y + offset, dotSize, dotSize);
+                }
+            }
+        }
+    }
+
+    tempCtx.globalAlpha = 1.0;
+    return tempCanvas;
+}
+
+// --------- Chamada para remove.bg ----------
+async function processImageWithAPI(file) {
+    hideError();
+
+    if (!REMOVE_BG_API_KEY || REMOVE_BG_API_KEY === "SUA_CHAVE_AQUI") {
+        showError("Configure sua chave da API do remove.bg no código (REMOVE_BG_API_KEY).");
+        return;
+    }
+
+    loadingIndicator.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+    downloadBtn.disabled = true;
+
+    try {
+        const formData = new FormData();
+        formData.append("image_file", file);
+        formData.append("size", "auto");
+        formData.append("format", "png");
+
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "X-Api-Key": REMOVE_BG_API_KEY
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Erro remove.bg:", errorText);
+            throw new Error("Erro ao remover fundo. Verifique chave e créditos na API.");
+        }
+
+        const blob = await response.blob();
+        const imgURL = URL.createObjectURL(blob);
+
+        const img = new Image();
+        img.src = imgURL;
+        await img.decode();
+
+        cutoutImage = img;
+        renderCanvas();
+
+    } catch (err) {
+        console.error(err);
+        showError(err.message || "Erro inesperado ao processar a imagem.");
+        cutoutImage = null;
+        ctx.clearRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+        placeholder.classList.remove('hidden');
+    } finally {
+        loadingIndicator.classList.add('hidden');
+    }
+}
+
+// --------- Render principal ----------
+function renderCanvas() {
+    if (!cutoutImage) return;
+
+    placeholder.classList.add('hidden');
+
+    const imgW = cutoutImage.width;
+    const imgH = cutoutImage.height;
+    const ratio = Math.max(OUTPUT_SIZE / imgW, OUTPUT_SIZE / imgH);
+    const newW = imgW * ratio;
+    const newH = imgH * ratio;
+    const offsetX = (OUTPUT_SIZE - newW) / 2;
+    const offsetY = (OUTPUT_SIZE - newH) / 2;
+
+    // Fundo com bitmap "grudado" na silhueta
+    const auraBg = createAuraBackground(selectedColor, cutoutImage);
+    ctx.clearRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+    ctx.drawImage(auraBg, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+
+    // Halo na mesma cor de fundo para suavizar bordas e cabelo
+    ctx.save();
+    ctx.shadowColor = selectedColor;
+    ctx.shadowBlur = 26;
+    ctx.drawImage(cutoutImage, offsetX, offsetY, newW, newH);
+    ctx.restore();
+
+    // Pessoa por cima, sem alterar cores do rosto/cabelo
+    ctx.drawImage(cutoutImage, offsetX, offsetY, newW, newH);
+
+    downloadBtn.disabled = false;
+}
+
+// --------- Eventos ----------
+imageUpload.addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+        showError("Use apenas imagens PNG ou JPEG.");
+        return;
+    }
+
+    fileNameDisplay.textContent = `Arquivo: ${file.name}`;
+    await processImageWithAPI(file);
+});
+
+colorSelector.addEventListener("click", (event) => {
+    const target = event.target.closest("button");
+    if (!target || !target.dataset.color) return;
+
+    selectedColor = target.dataset.color;
+    colorSelector.querySelectorAll('button').forEach(btn => {
+        btn.classList.remove('border-[#74B5F2]', 'border-4');
+        btn.classList.add('border-transparent', 'border-2');
+    });
+    target.classList.add('border-[#74B5F2]', 'border-4');
+    target.classList.remove('border-transparent', 'border-2');
+
+    if (cutoutImage) renderCanvas();
+});
+
+downloadBtn.addEventListener("click", () => {
+    if (!cutoutImage) return;
+    const link = document.createElement("a");
+    link.download = `perfil_pronto_${Date.now()}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+
+    const msg = document.getElementById('download-msg');
+    msg.textContent = 'Download concluído. Verifique a pasta de downloads.';
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 4000);
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    const initialButton = colorSelector.querySelector(`[data-color="${selectedColor}"]`);
+    if (initialButton) {
+        initialButton.classList.add('border-4', 'border-[#74B5F2]');
+    }
+});
+</script>
+</body>
+</html>
